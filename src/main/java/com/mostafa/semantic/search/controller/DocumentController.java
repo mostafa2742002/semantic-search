@@ -3,7 +3,7 @@ package com.mostafa.semantic.search.controller;
 import java.util.List;
 
 import org.springframework.ai.document.Document;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
-@Controller
+@RestController
 @RequestMapping("/api/documents")
 public class DocumentController {
 
