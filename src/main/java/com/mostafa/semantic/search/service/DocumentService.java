@@ -7,6 +7,8 @@ import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 
+import com.mostafa.semantic.search.dto.SearchResponse;
+
 @Service
 public class DocumentService {
 
@@ -28,5 +30,19 @@ public class DocumentService {
                 .topK(1)
                 .build()
         );
+    }
+
+    public List<SearchResponse> search(String query) {
+        List<Document> results = vectorStore.similaritySearch(
+                SearchRequest.builder()
+                        .query(query)
+                        .topK(3)
+                        .similarityThreshold(0.5)
+                        .build()
+        );
+
+        return results.stream()
+                .map(doc -> new SearchResponse(doc.getText(), doc.getMetadata()))
+                .toList();
     }
 }
