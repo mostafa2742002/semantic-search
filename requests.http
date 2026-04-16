@@ -8,3 +8,10 @@ Content-Type: application/json
 {
   "content": "PostgreSQL supports ACID transactions"
 }
+
+###
+POST http://localhost:8081/api/ingestion/text?path=docs/security.txt
+Content-Type: application/json
+
+###
+GET http://localhost:8081/api/documents/search?search=how to secure stateless apis with token

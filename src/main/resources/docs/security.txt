@@ -1,0 +1,4 @@
+Spring Security is used to secure Java web applications.
+JWT authentication is commonly used for stateless REST APIs.
+A JWT contains claims, is signed, and is sent in the Authorization header.
+Role-based access control can be implemented with Spring Security authorities.
