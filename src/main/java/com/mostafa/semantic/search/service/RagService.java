@@ -1,11 +1,17 @@
 package com.mostafa.semantic.search.service;
 
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
+import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
+
+import com.mostafa.semantic.search.dto.RagAnswerResponse;
 
 @Service
 public class RagService {
@@ -18,23 +24,45 @@ public class RagService {
         this.vectorStore = vectorStore;
     }
 
-    public String ask(String question) {
-        return chatClient.prompt()
+   public RagAnswerResponse ask(String question) {
+        List<Document> docs = vectorStore.similaritySearch(
+                SearchRequest.builder()
+                        .query(question)
+                        .topK(4)
+                        .similarityThreshold(0.5)
+                        .build()
+        );
+
+        String context = docs.stream()
+                .map(Document::getText)
+                .collect(Collectors.joining("\n\n---\n\n"));
+
+        String answer = chatClient.prompt()
                 .system("""
-                    You are a helpful backend engineering assistant.
-                    Answer only from the retrieved context when possible.
-                    If the context is insufficient, say clearly that the answer
-                    is not fully supported by the provided documents.
-                    Keep the answer clear and practical.
-                """)
-                .user(question)
-                .advisors(QuestionAnswerAdvisor.builder(vectorStore)
-                        .searchRequest(SearchRequest.builder()
-                                .topK(3)
-                                .similarityThreshold(0.5)
-                                .build())
-                        .build())
+                        You are a helpful backend engineering assistant.
+                        Answer using the provided context.
+                        If the context is insufficient, say clearly that the
+                        answer is not fully supported by the provided documents.
+                        """)
+                .user("""
+                        Question:
+                        %s
+
+                        Context:
+                        %s
+                        """.formatted(question, context))
                 .call()
                 .content();
+
+        List<RagAnswerResponse.SourceItem> sources = docs.stream()
+                .map(doc -> new RagAnswerResponse.SourceItem(
+                        doc.getId(),
+                        String.valueOf(doc.getMetadata().get("source")),
+                        String.valueOf(doc.getMetadata().get("category")),
+                        doc.getMetadata()
+                ))
+                .toList();
+
+        return new RagAnswerResponse(answer, sources);
     }
 }
