@@ -1,6 +1,8 @@
 package com.mostafa.semantic.search.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.ai.document.Document;
 import org.springframework.ai.reader.TextReader;
@@ -61,5 +63,21 @@ public class DocumentIngestionService {
 
         vectorStore.add(splitDocuments);
         return splitDocuments.size();
+    }
+
+
+    private List<Document> enrichMetadata(List<Document> documents,
+                                        String source,
+                                        String category,
+                                        String docId) {
+        return documents.stream()
+                .map(doc -> {
+                    Map<String, Object> metadata = new HashMap<>(doc.getMetadata());
+                    metadata.put("source", source);
+                    metadata.put("category", category);
+                    metadata.put("docId", docId);
+                    return new Document(doc.getText(), metadata);
+                })
+                .toList();
     }
 }
