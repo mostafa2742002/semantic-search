@@ -20,6 +20,13 @@ public class RagService {
 
     public String ask(String question) {
         return chatClient.prompt()
+                .system("""
+                    You are a helpful backend engineering assistant.
+                    Answer only from the retrieved context when possible.
+                    If the context is insufficient, say clearly that the answer
+                    is not fully supported by the provided documents.
+                    Keep the answer clear and practical.
+                """)
                 .user(question)
                 .advisors(QuestionAnswerAdvisor.builder(vectorStore)
                         .searchRequest(SearchRequest.builder()
