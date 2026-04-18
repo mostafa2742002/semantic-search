@@ -12,6 +12,7 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 
 import com.mostafa.semantic.search.dto.RagAnswerResponse;
+import com.mostafa.semantic.search.prompt.PromptTemplates;
 
 @Service
 public class RagService {
@@ -38,21 +39,10 @@ public class RagService {
                 .collect(Collectors.joining("\n\n---\n\n"));
 
         String answer = chatClient.prompt()
-                .system("""
-                        You are a helpful backend engineering assistant.
-                        Answer using the provided context.
-                        If the context is insufficient, say clearly that the
-                        answer is not fully supported by the provided documents.
-                        """)
-                .user("""
-                        Question:
-                        %s
-
-                        Context:
-                        %s
-                        """.formatted(question, context))
-                .call()
-                .content();
+                        .system(PromptTemplates.ragSystemPrompt())
+                        .user(PromptTemplates.ragUserPrompt(question, context))
+                        .call()
+                        .content();
 
         List<RagAnswerResponse.SourceItem> sources = docs.stream()
                 .map(doc -> new RagAnswerResponse.SourceItem(
